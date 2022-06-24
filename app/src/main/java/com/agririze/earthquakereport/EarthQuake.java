@@ -10,10 +10,13 @@ public class EarthQuake {
     /** Date of the earthquake */
     private long mMilliSeconds;
 
-    public EarthQuake(double mMagnitude, String mLocation, long mMilliSeconds) {
+    private String mUrl;
+
+    public EarthQuake(double mMagnitude, String mLocation, long mMilliSeconds,String mUrl) {
         this.mMagnitude = mMagnitude;
         this.mLocation = mLocation;
         this.mMilliSeconds = mMilliSeconds;
+        this.mUrl = mUrl;
     }
 
     public double getMagnitude() {
@@ -26,5 +29,9 @@ public class EarthQuake {
 
     public long getMilliSeconds() {
         return mMilliSeconds;
+    }
+
+    public String getUrl() {
+        return mUrl;
     }
 }
