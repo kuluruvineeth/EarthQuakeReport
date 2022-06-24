@@ -18,4 +18,6 @@
     <color name="magnitude8">#E13A20</color>
     <color name="magnitude9">#D93218</color>
     <color name="magnitude10plus">#C03823</color>
+    <color name="textColorEarthquakeDetails">#B4BAC0</color>
+    <color name="textColorEarthquakeLocation">#2B3D4D</color>
 </resources>
