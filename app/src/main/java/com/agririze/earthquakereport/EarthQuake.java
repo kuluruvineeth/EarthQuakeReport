@@ -2,7 +2,7 @@ package com.agririze.earthquakereport;
 
 public class EarthQuake {
     /** Magnitude of the earthquake */
-    private String mMagnitude;
+    private double mMagnitude;
 
     /** Location of the earthquake */
     private String mLocation;
@@ -10,13 +10,13 @@ public class EarthQuake {
     /** Date of the earthquake */
     private long mMilliSeconds;
 
-    public EarthQuake(String mMagnitude, String mLocation, long mMilliSeconds) {
+    public EarthQuake(double mMagnitude, String mLocation, long mMilliSeconds) {
         this.mMagnitude = mMagnitude;
         this.mLocation = mLocation;
         this.mMilliSeconds = mMilliSeconds;
     }
 
-    public String getMagnitude() {
+    public double getMagnitude() {
         return mMagnitude;
     }
 
