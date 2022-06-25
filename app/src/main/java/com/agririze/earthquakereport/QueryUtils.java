@@ -103,6 +103,17 @@ public class QueryUtils {
         List<EarthQuake> earthquakes = new ArrayList<>();
         try{
             JSONObject baseJsonResponse = new JSONObject(earthquakeJSON);
+            JSONArray earthquakeArray = baseJsonResponse.getJSONArray("features");
+            for(int i=0;i<earthquakeArray.length();i++){
+                JSONObject currentEarthquake = earthquakeArray.getJSONObject(i);
+                JSONObject properties = currentEarthquake.getJSONObject("properties");
+                double magnitude = properties.getDouble("mag");
+                String location = properties.getString("place");
+                long time = properties.getLong("time");
+                String url = properties.getString("url");
+                EarthQuake earthquake = new EarthQuake(magnitude,location,time,url);
+                earthquakes.add(earthquake);
+            }
         }catch (JSONException e){
             Log.e(LOG_TAG,"Problem parsing the earthquake JSONObject",e);
         }
