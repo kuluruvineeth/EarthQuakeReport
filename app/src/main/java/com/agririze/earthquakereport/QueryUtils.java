@@ -1,51 +1,111 @@
 package com.agririze.earthquakereport;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class QueryUtils {
 
-    private static final String SAMPLE_JSON_RESPONSE = "{\"type\":\"FeatureCollection\",\"metadata\":{\"generated\":1656051701000,\"url\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2016-01-01&endtime=2016-01-31&minmag=6&limit=10\",\"title\":\"USGS Earthquakes\",\"status\":200,\"api\":\"1.13.6\",\"limit\":10,\"offset\":1,\"count\":10},\"features\":[{\"type\":\"Feature\",\"properties\":{\"mag\":7.2,\"place\":\"80 km S of Mil’kovo, Russia\",\"time\":1454124312220,\"updated\":1651605544022,\"tz\":null,\"url\":\"https://earthquake.usgs.gov/earthquakes/eventpage/us20004vvx\",\"detail\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=us20004vvx&format=geojson\",\"felt\":3,\"cdi\":3.4,\"mmi\":6.719,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":1,\"sig\":799,\"net\":\"us\",\"code\":\"20004vvx\",\"ids\":\",gcmt20160130032510,pt16030050,at00o1qxho,us20004vvx,iscgem612141669,atlas20160130032512,\",\"sources\":\",gcmt,pt,at,us,iscgem,atlas,\",\"types\":\",associate,cap,dyfi,finite-fault,general-text,impact-link,impact-text,losspager,moment-tensor,origin,phase-data,shakemap,\",\"nst\":null,\"dmin\":0.958,\"rms\":1.19,\"gap\":17,\"magType\":\"mww\",\"type\":\"earthquake\",\"title\":\"M 7.2 - 80 km S of Mil’kovo, Russia\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[158.5463,53.9776,177]},\"id\":\"us20004vvx\"},\n" +
-            "{\"type\":\"Feature\",\"properties\":{\"mag\":6.1,\"place\":\"151 km SE of Kokopo, Papua New Guinea\",\"time\":1453777820750,\"updated\":1651605541336,\"tz\":null,\"url\":\"https://earthquake.usgs.gov/earthquakes/eventpage/us20004uks\",\"detail\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=us20004uks&format=geojson\",\"felt\":null,\"cdi\":null,\"mmi\":4.1,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":0,\"sig\":572,\"net\":\"us\",\"code\":\"20004uks\",\"ids\":\",gcmt20160126031023,us20004uks,iscgem612141578,\",\"sources\":\",gcmt,us,iscgem,\",\"types\":\",associate,cap,losspager,moment-tensor,origin,phase-data,shakemap,\",\"nst\":null,\"dmin\":1.537,\"rms\":0.74,\"gap\":25,\"magType\":\"mww\",\"type\":\"earthquake\",\"title\":\"M 6.1 - 151 km SE of Kokopo, Papua New Guinea\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[153.2454,-5.2952,26]},\"id\":\"us20004uks\"},\n" +
-            "{\"type\":\"Feature\",\"properties\":{\"mag\":6.3,\"place\":\"49 km NNE of Al Hoceïma, Morocco\",\"time\":1453695722730,\"updated\":1651599596294,\"tz\":null,\"url\":\"https://earthquake.usgs.gov/earthquakes/eventpage/us10004gy9\",\"detail\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=us10004gy9&format=geojson\",\"felt\":117,\"cdi\":7.2,\"mmi\":5.551,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":0,\"sig\":695,\"net\":\"us\",\"code\":\"10004gy9\",\"ids\":\",gcmt20160125042203,us10004gy9,iscgem608278395,atlas20160125042202,\",\"sources\":\",gcmt,us,iscgem,atlas,\",\"types\":\",associate,cap,dyfi,impact-text,losspager,moment-tensor,origin,phase-data,shakemap,\",\"nst\":null,\"dmin\":2.201,\"rms\":0.92,\"gap\":20,\"magType\":\"mww\",\"type\":\"earthquake\",\"title\":\"M 6.3 - 49 km NNE of Al Hoceïma, Morocco\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[-3.6818,35.6493,12]},\"id\":\"us10004gy9\"},\n" +
-            "{\"type\":\"Feature\",\"properties\":{\"mag\":7.1,\"place\":\"47 km ESE of Pedro Bay, Alaska\",\"time\":1453631429557,\"updated\":1651605539991,\"tz\":null,\"url\":\"https://earthquake.usgs.gov/earthquakes/eventpage/ak01613v15nv\",\"detail\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=ak01613v15nv&format=geojson\",\"felt\":1816,\"cdi\":7.2,\"mmi\":7.461,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":1,\"sig\":1496,\"net\":\"ak\",\"code\":\"01613v15nv\",\"ids\":\",ak12496371,at00o1gd6r,us10004gqp,gcmt20160124103030,iscgem612141445,ak01613v15nv,atlas20160124103030,\",\"sources\":\",ak,at,us,gcmt,iscgem,ak,atlas,\",\"types\":\",associate,cap,dyfi,finite-fault,general-text,impact-link,impact-text,losspager,moment-tensor,origin,phase-data,shakemap,trump-shakemap,\",\"nst\":null,\"dmin\":null,\"rms\":1.05,\"gap\":null,\"magType\":\"mw\",\"type\":\"earthquake\",\"title\":\"M 7.1 - 47 km ESE of Pedro Bay, Alaska\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[-153.3392,59.6204,125.6]},\"id\":\"ak01613v15nv\"},\n" +
-            "{\"type\":\"Feature\",\"properties\":{\"mag\":6.6,\"place\":\"203 km SW of La Cruz de Loreto, Mexico\",\"time\":1453399617650,\"updated\":1651605537228,\"tz\":null,\"url\":\"https://earthquake.usgs.gov/earthquakes/eventpage/us10004g4l\",\"detail\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=us10004g4l&format=geojson\",\"felt\":11,\"cdi\":2.7,\"mmi\":3.92,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":1,\"sig\":673,\"net\":\"us\",\"code\":\"10004g4l\",\"ids\":\",gcmt20160121180659,pt16021050,at00o1bebo,us10004g4l,iscgem612141385,\",\"sources\":\",gcmt,pt,at,us,iscgem,\",\"types\":\",associate,cap,dyfi,impact-link,impact-text,losspager,moment-tensor,origin,phase-data,shakemap,\",\"nst\":null,\"dmin\":2.413,\"rms\":0.98,\"gap\":74,\"magType\":\"mww\",\"type\":\"earthquake\",\"title\":\"M 6.6 - 203 km SW of La Cruz de Loreto, Mexico\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[-106.9337,18.8239,10]},\"id\":\"us10004g4l\"},\n" +
-            "{\"type\":\"Feature\",\"properties\":{\"mag\":6.7,\"place\":\"52 km SE of Shizunai-furukawach?, Japan\",\"time\":1452741933640,\"updated\":1651599576878,\"tz\":null,\"url\":\"https://earthquake.usgs.gov/earthquakes/eventpage/us10004ebx\",\"detail\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=us10004ebx&format=geojson\",\"felt\":51,\"cdi\":5.8,\"mmi\":6.108,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":1,\"sig\":720,\"net\":\"us\",\"code\":\"10004ebx\",\"ids\":\",us10004ebx,gcmt20160114032534,at00o0xauk,pt16014050,iscgem608169794,atlas20160114032533,\",\"sources\":\",us,gcmt,at,pt,iscgem,atlas,\",\"types\":\",associate,cap,dyfi,impact-link,impact-text,losspager,moment-tensor,origin,phase-data,shakemap,\",\"nst\":null,\"dmin\":0.281,\"rms\":0.98,\"gap\":22,\"magType\":\"mww\",\"type\":\"earthquake\",\"title\":\"M 6.7 - 52 km SE of Shizunai-furukawach?, Japan\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[142.781,41.9723,46]},\"id\":\"us10004ebx\"},\n" +
-            "{\"type\":\"Feature\",\"properties\":{\"mag\":6.1,\"place\":\"14 km WNW of Charagua, Bolivia\",\"time\":1452741928270,\"updated\":1651599575614,\"tz\":null,\"url\":\"https://earthquake.usgs.gov/earthquakes/eventpage/us10004ebw\",\"detail\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=us10004ebw&format=geojson\",\"felt\":3,\"cdi\":2.2,\"mmi\":2.21,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":0,\"sig\":573,\"net\":\"us\",\"code\":\"10004ebw\",\"ids\":\",us10004ebw,gcmt20160114032528,iscgem608169793,\",\"sources\":\",us,gcmt,iscgem,\",\"types\":\",cap,dyfi,impact-text,losspager,moment-tensor,origin,phase-data,shakemap,\",\"nst\":null,\"dmin\":5.492,\"rms\":1.04,\"gap\":16,\"magType\":\"mww\",\"type\":\"earthquake\",\"title\":\"M 6.1 - 14 km WNW of Charagua, Bolivia\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[-63.3288,-19.7597,582.56]},\"id\":\"us10004ebw\"},\n" +
-            "{\"type\":\"Feature\",\"properties\":{\"mag\":6.2,\"place\":\"74 km NW of Rumoi, Japan\",\"time\":1452532083920,\"updated\":1651604818234,\"tz\":null,\"url\":\"https://earthquake.usgs.gov/earthquakes/eventpage/us10004djn\",\"detail\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=us10004djn&format=geojson\",\"felt\":8,\"cdi\":3.4,\"mmi\":3.8,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":0,\"sig\":594,\"net\":\"us\",\"code\":\"10004djn\",\"ids\":\",us10004djn,gcmt20160111170803,iscgem611838631,\",\"sources\":\",us,gcmt,iscgem,\",\"types\":\",cap,dyfi,impact-text,losspager,moment-tensor,origin,phase-data,shakemap,\",\"nst\":null,\"dmin\":1.139,\"rms\":0.96,\"gap\":33,\"magType\":\"mww\",\"type\":\"earthquake\",\"title\":\"M 6.2 - 74 km NW of Rumoi, Japan\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[141.0867,44.4761,238.81]},\"id\":\"us10004djn\"},\n" +
-            "{\"type\":\"Feature\",\"properties\":{\"mag\":6.5,\"place\":\"227 km SE of Sarangani, Philippines\",\"time\":1452530285900,\"updated\":1651599562536,\"tz\":null,\"url\":\"https://earthquake.usgs.gov/earthquakes/eventpage/us10004dj5\",\"detail\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=us10004dj5&format=geojson\",\"felt\":3,\"cdi\":2.7,\"mmi\":6.398,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":1,\"sig\":651,\"net\":\"us\",\"code\":\"10004dj5\",\"ids\":\",gcmt20160111163807,pt16011050,at00o0srjp,us10004dj5,iscgem608168789,atlas20160111163805,\",\"sources\":\",gcmt,pt,at,us,iscgem,atlas,\",\"types\":\",associate,cap,dyfi,impact-link,impact-text,losspager,moment-tensor,origin,phase-data,shakemap,\",\"nst\":null,\"dmin\":3.144,\"rms\":0.72,\"gap\":22,\"magType\":\"mww\",\"type\":\"earthquake\",\"title\":\"M 6.5 - 227 km SE of Sarangani, Philippines\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[126.8621,3.8965,13]},\"id\":\"us10004dj5\"},\n" +
-            "{\"type\":\"Feature\",\"properties\":{\"mag\":6,\"place\":\"Pacific-Antarctic Ridge\",\"time\":1451986454620,\"updated\":1651605529960,\"tz\":null,\"url\":\"https://earthquake.usgs.gov/earthquakes/eventpage/us10004bgk\",\"detail\":\"https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=us10004bgk&format=geojson\",\"felt\":0,\"cdi\":1,\"mmi\":0,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":0,\"sig\":554,\"net\":\"us\",\"code\":\"10004bgk\",\"ids\":\",gcmt20160105093415,us10004bgk,iscgem612141026,\",\"sources\":\",gcmt,us,iscgem,\",\"types\":\",associate,cap,dyfi,losspager,moment-tensor,origin,phase-data,shakemap,\",\"nst\":null,\"dmin\":30.75,\"rms\":0.67,\"gap\":71,\"magType\":\"mww\",\"type\":\"earthquake\",\"title\":\"M 6.0 - Pacific-Antarctic Ridge\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[-136.2603,-54.2906,10]},\"id\":\"us10004bgk\"}],\"bbox\":[-153.3392,-54.2906,10,158.5463,59.6204,582.56]}";
+    private static final String LOG_TAG = QueryUtils.class.getSimpleName();
+
+
 
     private QueryUtils(){}
 
-    public static ArrayList<EarthQuake> extractEarthquakes(){
-
-        ArrayList<EarthQuake> earthQuakes = new ArrayList<EarthQuake>();
-        SimpleDateFormat dateformatter = new SimpleDateFormat("MMM DD, yyyy");
+    public static List<EarthQuake> fetchEarthquakeData(String requestUrl){
+        URL url = createUrl(requestUrl);
+        String jsonResponse = null;
         try{
-            JSONObject baseJsonResponse = new JSONObject(SAMPLE_JSON_RESPONSE);
-            JSONArray earthquakeArray = baseJsonResponse.getJSONArray("features");
-            for(int i=0;i< earthquakeArray.length();i++){
-                JSONObject currentEarthquake = earthquakeArray.getJSONObject(i);
-                JSONObject properties = currentEarthquake.getJSONObject("properties");
-                double magnitude = properties.getDouble("mag");
-                String location = properties.getString("place");
-                long time = properties.getLong("time");
-                String url = properties.getString("url");
-                EarthQuake earthquake = new EarthQuake(magnitude,location,time,url);
-                earthQuakes.add(earthquake);
-            }
-
-        }catch (JSONException e){
-            Log.e("QueryUtils","Problem parsing the earthquake JSON results",e);
+            jsonResponse = makeHttpRequest(url);
+        }catch (IOException e){
+            Log.e(LOG_TAG,"Problem making the HTTP request.",e);
         }
-        return earthQuakes;
+        List<EarthQuake> earthquakes = extractFeatureFromJson(jsonResponse);
+        return earthquakes;
+    }
+
+    private static URL createUrl(String stringUrl){
+        URL url = null;
+        try{
+            url = new URL(stringUrl);
+        }catch(MalformedURLException e){
+            Log.e(LOG_TAG,"Problem building the URL ",e);
+        }
+        return url;
+    }
+
+    private static String makeHttpRequest(URL url) throws IOException{
+        String jsonResponse = "";
+        if(url==null){
+            return jsonResponse;
+        }
+        HttpURLConnection urlConnection = null;
+        InputStream inputStream = null;
+        try{
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setReadTimeout(10000);
+            urlConnection.setConnectTimeout(15000);
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+            if(urlConnection.getResponseCode()==200){
+                inputStream = urlConnection.getInputStream();
+                jsonResponse = readFromStream(inputStream);
+            }else{
+                Log.e(LOG_TAG,"Error response code: " + urlConnection.getResponseCode());
+            }
+        }catch (IOException e){
+            Log.e(LOG_TAG,"Problem retrieving the earthquake JSON results.",e);
+        }finally {
+            if(urlConnection!=null){
+                urlConnection.disconnect();
+            }
+            if (inputStream!=null){
+                inputStream.close();
+            }
+        }
+        return jsonResponse;
+    }
+
+    private static String readFromStream(InputStream inputStream) throws IOException{
+        StringBuilder output = new StringBuilder();
+        if(inputStream!=null){
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
+            BufferedReader reader = new BufferedReader(inputStreamReader);
+            String line = reader.readLine();
+            while(line!=null){
+                output.append(line);
+                line = reader.readLine();
+            }
+        }
+        return output.toString();
+    }
+
+    private static List<EarthQuake> extractFeatureFromJson(String earthquakeJSON){
+        if(TextUtils.isEmpty(earthquakeJSON)){
+            return null;
+        }
+        List<EarthQuake> earthquakes = new ArrayList<>();
+        try{
+            JSONObject baseJsonResponse = new JSONObject(earthquakeJSON);
+        }catch (JSONException e){
+            Log.e(LOG_TAG,"Problem parsing the earthquake JSONObject",e);
+        }
+        return earthquakes;
     }
 }
