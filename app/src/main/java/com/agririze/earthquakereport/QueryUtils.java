@@ -32,10 +32,13 @@ public class QueryUtils {
         URL url = createUrl(requestUrl);
         String jsonResponse = null;
         try{
+            //Thread.sleep(2000);
             jsonResponse = makeHttpRequest(url);
         }catch (IOException e){
             Log.e(LOG_TAG,"Problem making the HTTP request.",e);
-        }
+        }/*catch (InterruptedException e){
+            e.printStackTrace();
+        }*/
         List<EarthQuake> earthquakes = extractFeatureFromJson(jsonResponse);
         return earthquakes;
     }
